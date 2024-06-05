@@ -1,0 +1,137 @@
+video -> https://www.youtube.com/@dungntvnyouification/videos
+
+Master -> 172.18.231.84
+Slave1 -> 172.18.135.11
+Slave2 -> 172.18.130.179
+
+//////////////////////////////////////// Paso 1: SSH ////////////////////////////////////////
+
+//En todas
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get install build-essential
+sudo apt-get install net-tools
+sudo apt-get install openssh-server
+sudo apt-get install openssh-client
+mkdir ~/.ssh
+chmod 700 ~/.ssh
+ssh-keygen -t rsa
+
+Master -> /home/administrador-ce/.ssh/id_rsa_master, password: 123
+Slave1 -> /home/administrador-ce/.ssh/id_rsa_slave1, password: 123
+Slave2 -> /home/administrador-ce/.ssh/id_rsa_slave2, password: 123
+
+Copiar los id_rsa.pub de los slaves al master y del master a los slaves (se hizo por usb)
+
+//Solo master
+cat /home/administrador-ce/.ssh/id_rsa_slave1.pub >> /home/administrador-ce/.ssh/authorized_keys
+cat /home/administrador-ce/.ssh/id_rsa_slave2.pub >> /home/administrador-ce/.ssh/authorized_keys
+
+//En ambos slaves
+cat /home/administrador-ce/.ssh/id_rsa_master.pub >> /home/administrador-ce/.ssh/authorized_keys
+
+//En todas
+sudo apt-get install gedit
+sudo gedit /etc/ssh/sshd_config
+(Dentro del archivo){ 
+    PubkeyAuthentication yes
+    RSAAuthentication yes
+}
+sudo service ssh restart
+
+
+
+//////////////////////////////////////// Paso 2: NFS ////////////////////////////////////////
+
+//En master
+sudo apt-get install nfs-kernel-server
+sudo mkdir -p /home/administrador-ce/Escritorio/sharedfolder
+sudo chown nobody:nogroup /home/administrador-ce/Escritorio/sharedfolder
+sudo chmod 777 /home/administrador-ce/Escritorio/sharedfolder
+sudo gedit /etc/exports
+(Dentro del archivo){
+    /home/administrador-ce/Escritorio/sharedfolder 172.18.135.11(rw,sync,no_subtree_check)
+    /home/administrador-ce/Escritorio/sharedfolder 172.18.130.179(rw,sync,no_subtree_check)
+}
+sudo exportfs -a
+sudo systemctl restart nfs-kernel-server
+sudo ufw status
+(Si aparece activo usar) sudo ufw disable (recordar volverlo a activar cuando no se esté con el cluster)
+
+
+//En slaves
+sudo apt-get install nfs-common
+sudo mkdir -p /home/administrador-ce/Escritorio/sharedfolder
+sudo mount 172.18.231.84:/home/administrador-ce/Escritorio/sharedfolder /home/administrador-ce/Escritorio/sharedfolder
+
+
+(Test) Se pusieron archivos en la carpeta desde el master y se vio en los slaves
+
+
+############### Repetir luego de prender la pc ###################
+Master
+sudo systemctl restart nfs-kernel-server
+
+slaves
+sudo mount 172.18.231.84:/home/administrador-ce/Escritorio/sharedfolder /home/administrador-ce/Escritorio/sharedfolder
+
+
+
+//////////////////////////////////////// Paso 3: OpenMPI ////////////////////////////////////////
+
+
+#Todas
+sudo apt-get install gcc
+sudo apt-get install openmpi-bin openmpi-common libopenmpi-dev libgtk2.0-dev
+# (descargar archivo tar.gz desde la pagina y ponerlo en el Escritorio en todas las pc)
+cd
+cd Escritorio
+tar -xvf openmpi-4.0.3.tar.gz
+cd openmpi-4.0.3
+
+./configure --prefix="/home/administrador-ce/.openmpi"
+make
+sudo make install
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+
+mpicc
+mpirun
+
+
+#Eliminar todo (por si acaso algo saliera mal)
+sudo make uninstall
+sudo apt remove openmpi-bin && sudo apt autoclean && sudo apt autoremove
+sudo apt-get remove --purge openmpi-bin openmpi-common libopenmpi-dev libgtk2.0-dev
+
+
+
+//////////////////////////////////////// Paso 4: Test ////////////////////////////////////////
+
+#Todas
+#Modificar /etc/hosts
+sudo gedit /etc/hosts
+
+#Master
+127.0.0.1	localhost
+172.18.135.11	slave1
+172.18.130.179	slave2
+
+#slave1
+127.0.0.1 localhost
+172.18.231.84 master
+
+#slave2
+127.0.0.1 localhost
+172.18.231.84 master
+
+#Descargar mpi-prime.c del video
+
+#En master, compilar mpi-prime.c
+mpicc mpi-prime.c -o ./outputfile
+#Mover el outputfile a el sharedfolder
+cd
+cd Escritorio
+cd sharedfolder
+mpirun --hostfile /etc/hosts -np 3 ./outputfile
+
+
