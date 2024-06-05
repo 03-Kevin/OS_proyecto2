@@ -1,0 +1,78 @@
+------------------------1
+
+sudo apt-get update
+sudo apt-get install net-tools
+ifconfig
+
+master>  172.18.235.144
+slave> 172.18.235.152
+//////////////////////////////////////// Paso 1: SSH ////////////////////////////////////////
+
+//En todas
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get install build-essential
+sudo apt-get install net-tools
+sudo apt-get install openssh-server
+sudo apt-get install openssh-client
+mkdir ~/uno.ssh
+chmod 700 ~/uno.ssh
+ssh-keygen -t rsa
+-------------------------------
+kevin@kevUbu:~$ chmod 700 ~/.ssh
+kevin@kevUbu:~$ ssh-keygen -t rsa
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/kevin/.ssh/id_rsa): /home/kevin/.ssh/id_rsa_master
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in /home/kevin/.ssh/id_rsa_master
+Your public key has been saved in /home/kevin/.ssh/id_rsa_master.pub
+The key fingerprint is:
+SHA256:7jPqjq916CTiRf0i+y/HkSooeKEaKAzaynqkRVC3eTQ kevin@kevUbu
+The key's randomart image is:
++---[RSA 3072]----+
+| .. . E          |
+|.  . + .         |
+| .  o .          |
+|  .  o           |
+|..  . . S.       |
+|=.+.   +o        |
+|**oo+ =o+.       |
+|B++o.Oo+=        |
+|*=. +BB=oo       |
++----[SHA256]-----+
+kevin@kevUbu:~$ 
+
+
+
+(base) user@administradorce-OptiPlex-7000:~$ mkdir ~/.ssh
+mkdir: no se puede crear el directorio «/home/user/.ssh»: El archivo ya existe
+(base) user@administradorce-OptiPlex-7000:~$ chmod 700 ~/.ssh
+(base) user@administradorce-OptiPlex-7000:~$ ssh-keygen -t rsa
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/user/.ssh/id_rsa): /home/user/.ssh/id_rsa_slave
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in /home/user/.ssh/id_rsa_slave
+Your public key has been saved in /home/user/.ssh/id_rsa_slave.pub
+The key fingerprint is:
+SHA256:u34f2+QqGeU37y/VBa9+/wFRx4kAYkaF0VX53zANQus user@administradorce-OptiPlex-7000
+The key's randomart image is:
++---[RSA 3072]----+
+|      .*=oo++.ooo|
+|      o...  .++.o|
+|            .o.= |
+|           .. +.+|
+|        S  oE. +=|
+|         .. . = =|
+|        .  o.o.= |
+|         .+  *o +|
+|       .o. o+.o+O|
++----[SHA256]-----+
+
+-------------------------------
+
+Master -> /home/kevin/.ssh/id_rsa_master
+    password = ali
+Slave1 -> /home/administrador-ce/.ssh/id_rsa_slave1, 
+    password = ali
