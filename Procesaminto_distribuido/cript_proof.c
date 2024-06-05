@@ -35,7 +35,7 @@ int main() {
     }
 
     // Abre el archivo cript.txt en modo escritura
-    criptFile = fopen("cript.txt", "w");
+    criptFile = fopen("cripto.txt", "w");
     if (criptFile == NULL) {
         printf("No se pudo abrir el archivo cript.txt.\n");
         return 1;

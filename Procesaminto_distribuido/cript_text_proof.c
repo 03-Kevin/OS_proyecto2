@@ -28,7 +28,7 @@ int main() {
     char clave[] = "JASON";
 
     // Abre el archivo en modo lectura
-    file = fopen("cript.txt", "r");
+    file = fopen("cripto.txt", "r");
     if (file == NULL) {
         printf("No se pudo abrir el archivo.\n");
         return 1;
